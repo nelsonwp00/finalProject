@@ -85,7 +85,7 @@ public class StateMachine extends StateMachineAdapter {
                     LOG.error("Fail to decode IncrementAndGetRequest", e);
                 }
                 // follower ignore read operation
-                if (tradingOperation != null && tradingOperation.isReadOp()) {
+                if (tradingOperation != null) {
                     iter.next();
                     continue;
                 }

@@ -21,11 +21,6 @@ import java.io.Serializable;
 public class TradingOperation implements Serializable {
     private static final long serialVersionUID = -6597003954824547294L;
 
-    /** Get value */
-    public static final byte GET = 0x01;
-    /** Increment and get value */
-    public static final byte SET = 0x02;
-
     public static final byte CREATE_ACCOUNT = 0x03;
 
     public static final byte SEND_PAYMENT = 0x04;
@@ -40,15 +35,6 @@ public class TradingOperation implements Serializable {
     private String toAccountID;
 
     private int amount;
-
-
-    public static TradingOperation createGet() {
-        return new TradingOperation(GET);
-    }
-
-    public static TradingOperation createSet(final long delta) {
-        return new TradingOperation(SET, delta);
-    }
 
     public static TradingOperation createCreate_Account(final String fromAccountID, final int amount) {
         return new TradingOperation(CREATE_ACCOUNT, fromAccountID, amount);
@@ -93,10 +79,6 @@ public class TradingOperation implements Serializable {
         return op;
     }
 
-    public long getDelta() {
-        return delta;
-    }
-
     public String getFromAccountID() {
         return fromAccountID;
     }
@@ -107,9 +89,5 @@ public class TradingOperation implements Serializable {
 
     public int getAmount() {
         return amount;
-    }
-
-    public boolean isReadOp() {
-        return GET == this.op;
     }
 }

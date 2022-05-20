@@ -6,7 +6,6 @@ option java_package = "rpc";
 option java_outer_classname = "TradingOutter";
 
 message CreateAccountRequest {
-  //repeated bool readOnlySafe = 1;
   required string accountID = 1;
   optional int32 balance = 2;
 }
