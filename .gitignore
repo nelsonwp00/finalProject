@@ -1,6 +1,5 @@
 .idea/
 target/
 log/
-log_client/
 log_server/
 tmp/
