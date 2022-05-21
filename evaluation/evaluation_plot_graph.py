@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def plot_throughput(x, y, z):
   plt.title("Throughput Evaluation Result")
-  plt.xlabel(r"Nodes")
+  plt.xlabel(r"Clients")
   plt.ylabel(r"Throughput per second")
 
   plt.plot(NODES, x, label = "Create Account")
@@ -17,7 +17,7 @@ def plot_throughput(x, y, z):
 
 def plot_latency(x, y, z):
   plt.title("Latency Evaluation Result")
-  plt.xlabel(r"Nodes")
+  plt.xlabel(r"Clients")
   plt.ylabel(r"Latency ms")
 
   plt.plot(NODES, x, label = "Create Account")
