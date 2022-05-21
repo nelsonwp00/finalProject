@@ -59,102 +59,48 @@ public class Client {
 
 
         final String action = args[2];
-        String fromAccount = null;
-        String toAccount = null;
-        int amount = 0;
         System.out.println("Action : " + action);
 
-        if (action.equals("CreateAccount") && args.length == 5) {
-            fromAccount = args[3];
-            amount = Integer.parseInt(args[4]);
-            assert (amount >= 0);
-            handleOperation(cliClientService, leader, action, fromAccount, null, amount);
-        }
-        else if (action.equals("SendPayment") && args.length == 6) {
-            fromAccount = args[3];
-            toAccount = args[4];
-            amount = Integer.parseInt(args[5]);
-            assert (amount > 0);
-            handleOperation(cliClientService, leader, action, fromAccount, toAccount, amount);
-        }
-        else if (action.equals("QueryAccount") && args.length == 4) {
-            fromAccount = args[3];
-            handleOperation(cliClientService, leader, action, fromAccount, null, 0);
-        }
-        else if (action.equals("NonStopCreateAccount") && args.length == 4) {
-            long interval = Long.parseLong(args[3]);
-            new Timer().scheduleAtFixedRate(new TimerTask(){
-                @Override
-                public void run(){
-                    try {
-                        nonStopCreateAccount(cliClientService, leader);
-                    } catch (RemotingException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            },0,interval);
-        }
-        else if (action.equals("NonStopSendPayment") && args.length == 4) {
-            long interval = Long.parseLong(args[3]);
-            new Timer().scheduleAtFixedRate(new TimerTask(){
-                @Override
-                public void run(){
-                    try {
-                        nonStopSendPayment(cliClientService, leader);
-                    } catch (RemotingException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            },0,interval);
-        }
-        else if (action.equals("NonStopQueryAccount") && args.length == 4) {
-            long interval = Long.parseLong(args[3]);
-            new Timer().scheduleAtFixedRate(new TimerTask(){
-                @Override
-                public void run(){
-                    try {
-                        nonStopQueryAccount(cliClientService, leader);
-                    } catch (RemotingException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            },0,interval);
-        }
-        else {
-            System.out.println("Action does not have enough args.");
-            System.exit(0);
-        }
-    }
-
-    private static void handleOperation(
-            final CliClientServiceImpl cliClientService,
-            final PeerId leader,
-            final String operation,
-            final String fromAccount,
-            final String toAccount,
-            final int amount) throws InterruptedException, RemotingException
-    {
         final int n = 1;
         final CountDownLatch latch = new CountDownLatch(n);
-
-        //System.out.println("Leader is " + leader + ". Number of Operation = " + n);
-
         final long start = System.currentTimeMillis();
 
-        switch (operation) {
+        switch (action) {
             case "CreateAccount":
-                createAccount(cliClientService, leader, latch, fromAccount, amount);
+                assert (args.length == 5);
+                int balance = Integer.parseInt(args[4]);
+                assert (balance >= 0);
+                createAccount(cliClientService, leader, latch, args[3], balance);
+                latch.await();
+                System.out.println("Completed Operation : " + action + ". Latency = " + (System.currentTimeMillis() - start) + "ms");
                 break;
             case "SendPayment":
-                sendPayment(cliClientService, leader, latch, fromAccount, toAccount, amount);
+                assert (args.length == 6);
+                int payment = Integer.parseInt(args[5]);
+                assert (payment > 0);
+                sendPayment(cliClientService, leader, latch, args[3], args[4], payment);
+                latch.await();
+                System.out.println("Completed Operation : " + action + ". Latency = " + (System.currentTimeMillis() - start) + "ms");
                 break;
             case "QueryAccount":
-                queryAccount(cliClientService, leader, latch, fromAccount);
+                assert (args.length == 4);
+                queryAccount(cliClientService, leader, latch, args[3]);
+                latch.await();
+                System.out.println("Completed Operation : " + action + ". Latency = " + (System.currentTimeMillis() - start) + "ms");
+                break;
+            case "NonStopCreateAccount":
+                assert (args.length == 3);
+                nonStopCreateAccount(cliClientService, leader);
+                break;
+            case "NonStopSendPayment":
+                assert (args.length == 3);
+                nonStopSendPayment(cliClientService, leader);
+                break;
+            case "NonStopQueryAccount":
+                assert (args.length == 3);
+                nonStopQueryAccount(cliClientService, leader);
                 break;
         }
-
-        latch.await();
-        System.out.println("Completed Operation : " + operation + ". Latency = " + (System.currentTimeMillis() - start) + "ms");
     }
 
     private static void createAccount(
@@ -216,6 +162,12 @@ public class Client {
                 }
                 else {
                     System.out.println("Operation : Create Account : Timeout");
+                }
+
+                try {
+                    nonStopCreateAccount(cliClientService, leader);
+                } catch (RemotingException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -296,6 +248,12 @@ public class Client {
                 else {
                     System.out.println("Operation : Send Payment : Timeout");
                 }
+
+                try {
+                    nonStopSendPayment(cliClientService, leader);
+                } catch (RemotingException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
@@ -367,6 +325,12 @@ public class Client {
                 }
                 else {
                     System.out.println("Operation : Query Account : Timeout");
+                }
+
+                try {
+                    nonStopQueryAccount(cliClientService, leader);
+                } catch (RemotingException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
 

@@ -15,7 +15,7 @@ for ((i=1; i<=$numAccount; i+=1)); do
     logFile="$logDir/log${i}"
     accountID="acc$i"
 
-    echo "Creating Account $accountID"
+    #echo "Creating Account $accountID"
 
     java -jar $dir/$jarName $cluster $serverIPs $operation $accountID $accountBalance > $logFile 2>&1 &
 done
