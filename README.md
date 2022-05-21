@@ -1,1 +1,8 @@
 # Final Project
+
+|Command Package|Command|Version|
+|----------------|-------------------------------|-----------------------------|
+|Java|java|1.8.0_331|
+|Maven|mvn|3.8.5|
+|Python|python3|3.8.10|
+
