@@ -8,7 +8,7 @@ public class Block {
 
     byte[] prevHash;
 
-    static int blockSize = 4;
+    static int blockSize = 100;
 
     LocalDateTime timeStamp;
 

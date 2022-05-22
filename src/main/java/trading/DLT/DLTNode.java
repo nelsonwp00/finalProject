@@ -39,7 +39,7 @@ public class DLTNode {
 
     private static HashMap<Integer, String> orderTxnMap; // Map<Transaction, Transaction Order>
 
-    private static AtomicInteger txnIndex = new AtomicInteger(1); // the min correct order of txn
+    private static AtomicInteger txnIndex = new AtomicInteger(1); // the smallest correct order of txn
 
     private static ConcurrentHashMap<String, String> txnClientMap; // Map<Transaction, Client Address>
 
@@ -47,24 +47,12 @@ public class DLTNode {
 
 
     public static void main(final String[] args) throws Exception {
-        System.out.println("Usage : provide args {GroupId} {Conf} {Action} {AccountID} {Balance}\n");
+        System.out.println("Usage : provide args {GroupId} {Conf} {Port}\n");
+        assert (args.length == 3);
 
         init(args[0], args[1]);
 
-        start();
-
-//        new Timer().scheduleAtFixedRate(new TimerTask(){
-//            @Override
-//            public void run(){
-//                try {
-//                    sendTransaction(cliClientService, leader, UUID.randomUUID().toString());
-//                }
-//                catch (RemotingException | InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        },0,10);
-
+        start(Integer.parseInt(args[2])); // Start waiting for client
     }
 
     private static void init(final String groupId, final String confStr) throws Exception {
@@ -99,9 +87,7 @@ public class DLTNode {
         clientOutMap = new ConcurrentHashMap<>();
     }
 
-    private static void start() throws IOException {
-        final int PORT = 10000;
-
+    private static void start(final int PORT) throws IOException {
         ServerSocket nodeSocket = new ServerSocket(PORT);
 
         System.out.println("Node starts. Waiting for clients ...\n");

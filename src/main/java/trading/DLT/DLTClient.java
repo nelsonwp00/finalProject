@@ -10,11 +10,14 @@ import java.util.UUID;
 
 public class DLTClient {
     public static void main(String[] args) {
-        final String HOST = "127.0.0.1";
-        final int PORT = 10000;
-        final long interval = 100;
+        System.out.println("Usage : provide args {IP} {Port} {Interval}\n");
+        assert (args.length == 3);
 
-        System.out.println("Client started.");
+        final String HOST = args[0];
+        final int PORT = Integer.parseInt(args[1]);
+        final long interval = Long.parseLong(args[2]);
+
+        System.out.println("Client started. Connecting to " + HOST + ":" + PORT);
 
         try {
             Socket socket = new Socket(HOST, PORT);
