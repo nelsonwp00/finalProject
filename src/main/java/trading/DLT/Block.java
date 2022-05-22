@@ -1,5 +1,6 @@
 package trading.DLT;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Block {
@@ -9,7 +10,7 @@ public class Block {
 
     static int blockSize = 4;
 
-    long timeStamp;
+    LocalDateTime timeStamp;
 
     ArrayList<String> transactions;
 }

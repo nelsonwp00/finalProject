@@ -27,7 +27,7 @@ public class TradingOperation implements Serializable {
 
     public static final byte QUERY_ACCOUNT = 0x05;
 
-    public static final byte Send_Txn = 0x06;
+    public static final byte SEND_TXN = 0x06;
 
     private byte op;
 
@@ -52,7 +52,7 @@ public class TradingOperation implements Serializable {
     }
 
     public static TradingOperation createSend_Transaction(final String txnHash) {
-        return new TradingOperation(Send_Txn, txnHash, true);
+        return new TradingOperation(SEND_TXN, txnHash, true);
     }
 
     public TradingOperation(byte op, String fromAccountID, int amount) {

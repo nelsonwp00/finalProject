@@ -150,7 +150,7 @@ public class StateMachine extends StateMachineAdapter {
                             LOG.info("QUERY_ACCOUNT: " + errorMsg);
                         }
                         break;
-                    case Send_Txn:
+                    case SEND_TXN:
                         isTxnRequest = true;
 
                         txnHash = tradingOperation.getTxnHash();

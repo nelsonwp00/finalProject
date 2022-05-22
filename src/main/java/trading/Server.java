@@ -24,10 +24,7 @@ import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
 import com.alipay.sofa.jraft.rpc.RpcServer;
 import org.apache.commons.io.FileUtils;
-import trading.rpc.CreateAccountRequestProcessor;
-import trading.rpc.GrpcHelper;
-import trading.rpc.QueryRequestProcessor;
-import trading.rpc.SendPaymentRequestProcessor;
+import trading.rpc.*;
 import trading.rpc.TradingOutter.ValueResponse;
 
 import java.io.File;
@@ -54,6 +51,7 @@ public class Server {
         rpcServer.registerProcessor(new CreateAccountRequestProcessor(tradingService));
         rpcServer.registerProcessor(new SendPaymentRequestProcessor(tradingService));
         rpcServer.registerProcessor(new QueryRequestProcessor(tradingService));
+        rpcServer.registerProcessor(new TxnRequestProcessor(tradingService));
 
         // init state machine
         this.fsm = new StateMachine();
