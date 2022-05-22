@@ -17,17 +17,20 @@
 package trading;
 
 import com.alipay.sofa.jraft.Closure;
+import trading.rpc.DLTOutter.TxnResponse;
 import trading.rpc.TradingOutter.ValueResponse;
 
 public abstract class TradingClosure implements Closure {
     private ValueResponse valueResponse;
     private TradingOperation tradingOperation;
 
-    public void setCounterOperation(TradingOperation tradingOperation) {
+    private TxnResponse txnResponse;
+
+    public void setTradingOperation(TradingOperation tradingOperation) {
         this.tradingOperation = tradingOperation;
     }
 
-    public TradingOperation getCounterOperation() {
+    public TradingOperation getTradingOperation() {
         return tradingOperation;
     }
 
@@ -35,8 +38,16 @@ public abstract class TradingClosure implements Closure {
         return valueResponse;
     }
 
+    public TxnResponse getTxnResponse() {
+        return txnResponse;
+    }
+
     public void setValueResponse(ValueResponse valueResponse) {
         this.valueResponse = valueResponse;
+    }
+
+    public void setTxnResponse(TxnResponse txnResponse) {
+        this.txnResponse = txnResponse;
     }
 
     protected void failure(final String errorMsg, final String redirect) {
@@ -50,6 +61,18 @@ public abstract class TradingClosure implements Closure {
         setValueResponse(response);
     }
 
+    protected void txnFailure(final String txnHash, final String errorMsg, final String redirect) {
+        final TxnResponse response = TxnResponse.newBuilder()
+                .setTxnHash(txnHash)
+                .setTxnOrder(-1)
+                .setSuccess(false)
+                .setErrorMsg(errorMsg)
+                .setRedirect(redirect)
+                .build();
+
+        setTxnResponse(response);
+    }
+
     protected void success(final int balance) {
         final ValueResponse response = ValueResponse.newBuilder()
                 .setBalance(balance)
@@ -57,5 +80,15 @@ public abstract class TradingClosure implements Closure {
                 .build();
 
         setValueResponse(response);
+    }
+
+    protected void txnSuccess(final String txnHash, final int order) {
+        final TxnResponse response = TxnResponse.newBuilder()
+                .setTxnHash(txnHash)
+                .setTxnOrder(order)
+                .setSuccess(true)
+                .build();
+
+        setTxnResponse(response);
     }
 }

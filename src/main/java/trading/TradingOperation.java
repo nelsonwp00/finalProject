@@ -27,14 +27,17 @@ public class TradingOperation implements Serializable {
 
     public static final byte QUERY_ACCOUNT = 0x05;
 
+    public static final byte Send_Txn = 0x06;
+
     private byte op;
-    private long delta;
 
     private String fromAccountID;
 
     private String toAccountID;
 
     private int amount;
+
+    private String txnHash;
 
     public static TradingOperation createCreate_Account(final String fromAccountID, final int amount) {
         return new TradingOperation(CREATE_ACCOUNT, fromAccountID, amount);
@@ -48,13 +51,8 @@ public class TradingOperation implements Serializable {
         return new TradingOperation(QUERY_ACCOUNT, fromAccountID);
     }
 
-    public TradingOperation(byte op) {
-        this(op, 0);
-    }
-
-    public TradingOperation(byte op, long delta) {
-        this.op = op;
-        this.delta = delta;
+    public static TradingOperation createSend_Transaction(final String txnHash) {
+        return new TradingOperation(Send_Txn, txnHash, true);
     }
 
     public TradingOperation(byte op, String fromAccountID, int amount) {
@@ -75,6 +73,11 @@ public class TradingOperation implements Serializable {
         this.fromAccountID = fromAccountID;
     }
 
+    public TradingOperation(byte op, String txnHash, boolean isTxn) {
+        this.op = op;
+        this.txnHash = txnHash;
+    }
+
     public byte getOp() {
         return op;
     }
@@ -90,4 +93,6 @@ public class TradingOperation implements Serializable {
     public int getAmount() {
         return amount;
     }
+
+    public String getTxnHash() { return txnHash; }
 }

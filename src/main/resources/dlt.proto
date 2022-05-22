@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package jraft;
+
+// Command under Directory finalProject : protoc --java_out=src/main/java src/main/resources/dlt.proto
+
+option java_package = "trading.rpc";
+option java_outer_classname = "DLTOutter";
+
+message TxnRequest {
+  required string txnHash = 1;
+}
+
+message TxnResponse {
+  required string txnHash = 1;
+  required int32 txnOrder = 2; // return the transaction order to the request sender
+  required bool success = 3;
+  optional string redirect = 4;
+  optional string errorMsg = 5;
+}

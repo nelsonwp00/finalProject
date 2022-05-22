@@ -50,10 +50,6 @@ public class TradingServiceImpl implements TradingService {
         return this.server.getFsm().isLeader();
     }
 
-    private long getValue() {
-        return this.server.getFsm().getValue();
-    }
-
     private String getRedirect() {
         return this.server.redirect().getRedirect();
     }
@@ -73,6 +69,11 @@ public class TradingServiceImpl implements TradingService {
         applyOperation(TradingOperation.createQuery_Account(accountID), closure);
     }
 
+    @Override
+    public void sendTransaction(String txnHash, TradingClosure closure) {
+        applyOperation(TradingOperation.createSend_Transaction(txnHash), closure);
+    }
+
     private void applyOperation(final TradingOperation op, final TradingClosure closure) {
         if (!isLeader()) {
             handlerNotLeaderError(closure);
@@ -80,7 +81,7 @@ public class TradingServiceImpl implements TradingService {
         }
 
         try {
-            closure.setCounterOperation(op);
+            closure.setTradingOperation(op);
             final Task task = new Task();
             task.setData(ByteBuffer.wrap(SerializerManager.getSerializer(SerializerManager.Hessian2).serialize(op)));
             task.setDone(closure);

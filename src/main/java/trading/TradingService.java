@@ -22,4 +22,6 @@ public interface TradingService {
     void sendPayment(final String fromAccountID, final String toAccountID, final int amount, final TradingClosure closure);
 
     void queryAccount(final String accountID, final TradingClosure closure);
+
+    void sendTransaction(final String txnHash, final TradingClosure closure);
 }

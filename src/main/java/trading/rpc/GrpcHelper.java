@@ -25,6 +25,8 @@ import trading.rpc.TradingOutter.CreateAccountRequest;
 import trading.rpc.TradingOutter.QueryRequest;
 import trading.rpc.TradingOutter.SendPaymentRequest;
 import trading.rpc.TradingOutter.ValueResponse;
+import trading.rpc.DLTOutter.TxnRequest;
+import trading.rpc.DLTOutter.TxnResponse;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
@@ -57,14 +59,26 @@ public class GrpcHelper {
                     ValueResponse.getDefaultInstance()
             );
 
+            RpcFactoryHelper.rpcFactory().registerProtobufSerializer(
+                    TxnRequest.class.getName(),
+                    TxnRequest.getDefaultInstance()
+            );
+
+            RpcFactoryHelper.rpcFactory().registerProtobufSerializer(
+                    TxnResponse.class.getName(),
+                    TxnResponse.getDefaultInstance()
+            );
+
             try {
                 Class<?> clazz = Class.forName("com.alipay.sofa.jraft.rpc.impl.MarshallerHelper");
                 Method registerRespInstance = clazz.getMethod("registerRespInstance", String.class, Message.class);
                 registerRespInstance.invoke(null, CreateAccountRequest.class.getName(), CreateAccountRequest.getDefaultInstance());
                 registerRespInstance.invoke(null, SendPaymentRequest.class.getName(), SendPaymentRequest.getDefaultInstance());
                 registerRespInstance.invoke(null, QueryRequest.class.getName(), QueryRequest.getDefaultInstance());
-                registerRespInstance.invoke(null, SendPaymentRequest.class.getName(), SendPaymentRequest.getDefaultInstance());
-            } catch (Exception e) {
+                registerRespInstance.invoke(null, TxnRequest.class.getName(), SendPaymentRequest.getDefaultInstance());
+
+            }
+            catch (Exception e) {
                 LOG.error("Failed to init grpc server", e);
             }
         }

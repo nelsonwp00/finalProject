@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static trading.TradingOperation.*;
@@ -45,22 +46,16 @@ public class StateMachine extends StateMachineAdapter {
 
     private static final Logger LOG        = LoggerFactory.getLogger(StateMachine.class);
 
-    private final AtomicLong    value      = new AtomicLong(0);
-
     private final AtomicLong    leaderTerm = new AtomicLong(-1);
 
     private final Map<String, Integer> accounts = new ConcurrentHashMap<String, Integer>();
+
+    private final AtomicInteger txnOrder   = new AtomicInteger(0);
 
     public boolean isLeader() {
         return this.leaderTerm.get() > 0;
     }
 
-    /**
-     * Returns current value.
-     */
-    public long getValue() {
-        return this.value.get();
-    }
 
     @Override
     public void onApply(final Iterator iter) {
@@ -68,12 +63,15 @@ public class StateMachine extends StateMachineAdapter {
             int newBalance = 0;
             TradingOperation tradingOperation = null;
             String errorMsg = null;
+            boolean isTxnRequest = false;
+            String txnHash = null;
+            int currentTxnOrder = 0;
 
             TradingClosure closure = null;
             if (iter.done() != null) {
                 // This task is applied by this node, get value from closure to avoid additional parsing.
                 closure = (TradingClosure) iter.done();
-                tradingOperation = closure.getCounterOperation();
+                tradingOperation = closure.getTradingOperation();
             }
             else {
                 // Have to parse FetchAddRequest from this user log.
@@ -152,15 +150,30 @@ public class StateMachine extends StateMachineAdapter {
                             LOG.info("QUERY_ACCOUNT: " + errorMsg);
                         }
                         break;
+                    case Send_Txn:
+                        isTxnRequest = true;
+
+                        txnHash = tradingOperation.getTxnHash();
+                        currentTxnOrder = txnOrder.addAndGet(1);
+                        LOG.info("Send_Txn: Txn Hash = {}. Txn Order = {}", txnHash, currentTxnOrder);
+
+                        break;
                 }
 
                 if (closure != null) {
                     if (errorMsg == null) {
-                        closure.success(newBalance);
+                        if (isTxnRequest)
+                            closure.txnSuccess(txnHash, currentTxnOrder);
+                        else
+                            closure.success(newBalance);
+
                         closure.run(Status.OK());
                     }
                     else {
-                        closure.failure(errorMsg, StringUtils.EMPTY);
+                        if (isTxnRequest)
+                            closure.txnFailure(txnHash, errorMsg, StringUtils.EMPTY);
+                        else
+                            closure.failure(errorMsg, StringUtils.EMPTY);
                         closure.run(new Status(RaftError.EINTERNAL, errorMsg));
                     }
                 }
