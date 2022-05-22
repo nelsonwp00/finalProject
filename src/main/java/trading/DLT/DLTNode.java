@@ -11,11 +11,16 @@ import trading.rpc.DLTOutter.TxnRequest;
 import trading.rpc.DLTOutter.TxnResponse;
 import trading.rpc.GrpcHelper;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,27 +37,33 @@ public class DLTNode {
 
     private static MessageDigest digest; // for SHA-256 Hash
 
-    // ConcurrentHashMap<Transaction Hash, Transaction Order>
-    private static HashMap<Integer, String> orderTxnMap;
+    private static HashMap<Integer, String> orderTxnMap; // Map<Transaction, Transaction Order>
 
     private static AtomicInteger txnIndex = new AtomicInteger(1); // the min correct order of txn
 
+    private static ConcurrentHashMap<String, String> txnClientMap; // Map<Transaction, Client Address>
+
+    private static ConcurrentHashMap<String, PrintWriter> clientOutMap; // Map<Client Address, Client Output Stream>
+
+
     public static void main(final String[] args) throws Exception {
-        System.out.println("CreateAccount Usage : provide args {GroupId} {Conf} {Action} {AccountID} {Balance}");
+        System.out.println("Usage : provide args {GroupId} {Conf} {Action} {AccountID} {Balance}\n");
 
         init(args[0], args[1]);
 
-        new Timer().scheduleAtFixedRate(new TimerTask(){
-            @Override
-            public void run(){
-                try {
-                    sendTransaction(cliClientService, leader, UUID.randomUUID().toString());
-                }
-                catch (RemotingException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        },0,10);
+        start();
+
+//        new Timer().scheduleAtFixedRate(new TimerTask(){
+//            @Override
+//            public void run(){
+//                try {
+//                    sendTransaction(cliClientService, leader, UUID.randomUUID().toString());
+//                }
+//                catch (RemotingException | InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        },0,10);
 
     }
 
@@ -82,9 +93,58 @@ public class DLTNode {
 
         // Create the Gensis Block
         createBlock(new ArrayList<String>(), true);
+
+        txnClientMap = new ConcurrentHashMap<>();
+
+        clientOutMap = new ConcurrentHashMap<>();
     }
 
-    private synchronized static String createBlock(ArrayList<String> txns, boolean isGensis) {
+    private static void start() throws IOException {
+        final int PORT = 10000;
+
+        ServerSocket nodeSocket = new ServerSocket(PORT);
+
+        System.out.println("Node starts. Waiting for clients ...\n");
+
+        while (true) {
+            Socket clientSocket = nodeSocket.accept();
+
+            Thread thread = new Thread(() -> {
+                try {
+                    String clientAddress = clientSocket.getInetAddress() + ":"+ clientSocket.getPort();
+                    System.out.println("Connected to Client " + clientAddress);
+
+                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    Scanner in = new Scanner(clientSocket.getInputStream());
+
+                    clientOutMap.put(clientAddress, out);
+
+                    while (in.hasNextLine()) {
+                        String txn = in.nextLine();
+
+                        if (txn.equals("exit")) {
+                            System.out.println("Client : " + clientAddress + " exits.");
+                            out.close();
+                            in.close();
+                            break;
+                        }
+
+                        System.out.println("Client submits txn : " + txn);
+                        txnClientMap.put(txn, clientAddress);
+
+                        sendTransaction(cliClientService, leader, txn);
+                    }
+                }
+                catch (IOException | RemotingException | InterruptedException e) {
+                    System.out.println("Thread Error : " + e.getMessage());
+                }
+            });
+
+            thread.start();
+        }
+    }
+
+    private synchronized static void createBlock(ArrayList<String> txns, boolean isGensis) {
         Block block = new Block();
 
         String txnHashes = String.join("", txns);
@@ -100,22 +160,24 @@ public class DLTNode {
 
         block.transactions = txns;
 
-        blockchain.add(block);
-
-        prevHash = block.hash;
-
         String blockHashString = convertSHA256toString(block.hash);
+        int blockIndex = blockchain.size();
 
-        System.out.println("Form Block " + (blockchain.size() - 1) + ". Block Hash : " + blockHashString);
+        System.out.println("Form Block " + blockIndex + ". Block Hash : " + blockHashString);
         System.out.println("Block Timestamp : " + block.timeStamp);
 
         int order = 1;
         if (!isGensis) {
             System.out.println("Previous Block Hash : " + convertSHA256toString(block.prevHash));
-            for (String txn : txns) System.out.println("Txn " + order++ + " : " + txn);
+            for (String txn : txns) {
+                System.out.println("Txn " + order++ + " : " + txn);
+                notifyClient(txn, blockHashString, blockIndex);
+            }
         }
 
-        return blockHashString;
+        blockchain.add(block);
+
+        prevHash = block.hash;
     }
 
     private static String convertSHA256toString(byte[] sha256Hash) {
@@ -127,6 +189,18 @@ public class DLTNode {
             hexString.insert(0, '0');
 
         return hexString.toString();
+    }
+
+    private static void notifyClient(final String txn, final String blockHash, final int blockIndex) {
+        String clientID = txnClientMap.get(txn);
+        PrintWriter out = clientOutMap.get(clientID);
+
+        if (out != null) {
+            out.println("Txn " + txn + " is included in the ledger at Block " + blockIndex + ". Block Hash : " + blockHash);
+        }
+        else {
+            System.err.println("notifyClient: " + clientID + " output stream not found.");
+        }
     }
 
     private static void sendTransaction(
