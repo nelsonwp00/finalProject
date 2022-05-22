@@ -1,10 +1,10 @@
 
-nodePort="10000"
+nodePort=$1
 
 # Start DLT Node
 timeout 50 scripts/startDLTNode.sh $nodePort
 
-sleep 5
+sleep 8
 
 numClients=2
 interval="50" # send a transaction per 50ms

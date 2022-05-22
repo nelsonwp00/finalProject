@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Block {
-    byte[] hash;
+    byte[] hash; // SHA-256 Hash
 
-    byte[] prevHash;
+    byte[] prevHash; // SHA-256 Hash
 
     static int blockSize = 100;
 

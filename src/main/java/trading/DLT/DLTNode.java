@@ -92,6 +92,13 @@ public class DLTNode {
     private static void start(final int PORT) throws IOException {
         ServerSocket nodeSocket = new ServerSocket(PORT);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                nodeSocket.close();
+                System.out.println("DLT Node exits.");
+            } catch (IOException e) { /* failed */ }
+        }));
+
         System.out.println("Node starts. Waiting for clients ...\n");
 
         while (true) {

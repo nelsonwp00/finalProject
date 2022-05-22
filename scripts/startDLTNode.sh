@@ -10,5 +10,5 @@ mkdir -p $logDir
 logFile="$logDir/log"
 
 
-echo "Starting DLT Node ... "
+echo "Starting DLT Node at Port $port ... "
 java -jar $dir/$jarName $cluster $serverIPs $port > $logFile 2>&1 &
