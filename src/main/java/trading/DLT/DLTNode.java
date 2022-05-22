@@ -47,8 +47,10 @@ public class DLTNode {
 
 
     public static void main(final String[] args) throws Exception {
-        System.out.println("Usage : provide args {GroupId} {Conf} {Port}\n");
-        assert (args.length == 3);
+        if (args.length != 3) {
+            System.err.println("Not enough arguments. Usage : provide args {GroupId} {Conf} {Port}\n");
+            System.exit(0);
+        }
 
         init(args[0], args[1]);
 
@@ -185,7 +187,7 @@ public class DLTNode {
             out.println("Txn " + txn + " is included in the ledger at Block " + blockIndex + ". Block Hash : " + blockHash);
         }
         else {
-            System.err.println("notifyClient: " + clientID + " output stream not found.");
+            System.out.println("notifyClient: " + clientID + " output stream not found.");
         }
     }
 

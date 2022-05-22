@@ -1,6 +1,7 @@
 package trading.DLT;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
@@ -22,17 +23,24 @@ public class DLTClient {
         try {
             Socket socket = new Socket(HOST, PORT);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            Scanner in = new Scanner(socket.getInputStream());
+            InputStream inStream = socket.getInputStream();
+            Scanner in = new Scanner(inStream);
 
             new Timer().scheduleAtFixedRate(new TimerTask(){
                 @Override
-                public void run(){
+                public void run() {
                     String txn = UUID.randomUUID().toString();
                     out.println(txn);
                     System.out.println("Submits Txn : " + txn);
 
-                    if (in.hasNextLine())
-                        System.out.println("Received Server message : " + in.nextLine());
+                    try {
+                        if (inStream.available() != 0) {
+                            System.out.println("Received Server message : " + in.nextLine());
+                        }
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             },0, interval);
         }

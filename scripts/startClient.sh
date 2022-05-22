@@ -15,11 +15,6 @@ for ((i=1; i<=$numClients; i+=1)); do
     #echo "Starting Client $i"
     logFile="$logDir/log${i}"
 
-    if [ -z "$interval" ]
-    then
-      java -jar $dir/$jarName $cluster $serverIPs $operation > $logFile 2>&1 &
-    else
-      java -jar $dir/$jarName $cluster $serverIPs $operation $interval > $logFile 2>&1 &
-    fi
+    java -jar $dir/$jarName $cluster $serverIPs $operation > $logFile 2>&1 &
 done
 wait
