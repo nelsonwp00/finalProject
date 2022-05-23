@@ -72,10 +72,10 @@ public class GrpcHelper {
             try {
                 Class<?> clazz = Class.forName("com.alipay.sofa.jraft.rpc.impl.MarshallerHelper");
                 Method registerRespInstance = clazz.getMethod("registerRespInstance", String.class, Message.class);
-                registerRespInstance.invoke(null, CreateAccountRequest.class.getName(), CreateAccountRequest.getDefaultInstance());
-                registerRespInstance.invoke(null, SendPaymentRequest.class.getName(), SendPaymentRequest.getDefaultInstance());
-                registerRespInstance.invoke(null, QueryRequest.class.getName(), QueryRequest.getDefaultInstance());
-                registerRespInstance.invoke(null, TxnRequest.class.getName(), SendPaymentRequest.getDefaultInstance());
+                registerRespInstance.invoke(null, CreateAccountRequest.class.getName(), ValueResponse.getDefaultInstance());
+                registerRespInstance.invoke(null, SendPaymentRequest.class.getName(), ValueResponse.getDefaultInstance());
+                registerRespInstance.invoke(null, QueryRequest.class.getName(), ValueResponse.getDefaultInstance());
+                registerRespInstance.invoke(null, TxnRequest.class.getName(), TxnResponse.getDefaultInstance());
 
             }
             catch (Exception e) {
