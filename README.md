@@ -1,4 +1,5 @@
-# Final Project
+# COMP3358 Distributed and Parallel Computing - Final Project
+## Raft Application
 
 |Command Package|Command|Version|
 |----------------|-------------------------------|-----------------------------|
