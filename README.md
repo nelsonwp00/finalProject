@@ -1,5 +1,5 @@
 # COMP3358 Distributed and Parallel Computing - Final Project
-## Raft Application
+## Raft Application - Trading Account Transaction 
 
 |Command Package|Command|Version|
 |----------------|-------------------------------|-----------------------------|
